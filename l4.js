@@ -32,6 +32,48 @@ function railFenceEncrypt(text, key) {
     return encryptedText;
 }
 
+function railFenceDecrypt(text, key) {
+    let fence = [];
+    for (let i = 0; i < key; i++) {
+        fence.push([]);
+    }
+
+    let rail = 0;
+    let direction = 1;
+
+    for (let char of text) {
+        fence[rail].push('x'); // placeholder for characters
+        rail += direction;
+
+        if (rail === key - 1 || rail === 0) {
+            direction = -direction;
+        }
+    }
+
+    let index = 0;
+    for (let i = 0; i < key; i++) {
+        for (let j = 0; j < fence[i].length; j++) {
+            fence[i][j] = text[index];
+            index++;
+        }
+    }
+
+    rail = 0;
+    direction = 1;
+    let decryptedText = '';
+
+    for (let i = 0; i < text.length; i++) {
+        decryptedText += fence[rail].shift();
+        rail += direction;
+
+        if (rail === key - 1 || rail === 0) {
+            direction = -direction;
+        }
+    }
+
+    return decryptedText;
+}
+
 function caesarCipher(text, key, encrypt = true) {
     return text.replace(/[a-zA-Z]/g, (char) => {
         const base = char < 'a' ? 'A'.charCodeAt(0) : 'a'.charCodeAt(0);
@@ -74,9 +116,9 @@ function vernamCipher(text, key, encrypt = true) {
         .join('');
 }
 
-function processFile(inputFilename, outputFilename, caesarKey, vigenereKey, vernamKey, railKey, encrypt) {
+function processFile(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, encrypt) {
     try {
-        let data = fs.readFileSync(inputFilename, 'utf8');
+        let data = fs.readFileSync(filename, 'utf8');
 
         if (encrypt) {
             data = railFenceEncrypt(data, railKey);
@@ -87,9 +129,10 @@ function processFile(inputFilename, outputFilename, caesarKey, vigenereKey, vern
             data = vernamCipher(data, vernamKey, false);
             data = vigenereCipher(data, vigenereKey, false);
             data = caesarCipher(data, caesarKey, false);
-            data = railFenceEncrypt(data, railKey);
+            data = railFenceDecrypt(data, railKey);
         }
 
+        const outputFilename = `${filename.split('.')[0]}_${encrypt ? 'encrypted' : 'decrypted'}.txt`;
         fs.writeFileSync(outputFilename, data);
         console.log(`${encrypt ? 'Encrypted' : 'Decrypted'} successfully. Check ${outputFilename}`);
     } catch (err) {
@@ -98,7 +141,7 @@ function processFile(inputFilename, outputFilename, caesarKey, vigenereKey, vern
 }
 
 function main() {
-    rl.question('Enter the filename (with .txt extension): ', (inputFilename) => {
+    rl.question('Enter the filename (with .txt extension): ', (filename) => {
         rl.question('Do you want to encrypt or decrypt? ', (operation) => {
             const isEncrypt = operation.toLowerCase() === 'encrypt';
 
@@ -127,11 +170,7 @@ function main() {
                                     return;
                                 }
 
-                                const outputFilename = isEncrypt
-                                    ? `${inputFilename.split('.')[0]}_encrypted.txt`
-                                    : `${inputFilename.split('.')[0]}_decrypted.txt`;
-
-                                processFile(inputFilename, outputFilename, caesarKey, vigenereKey, vernamKey, railKey, isEncrypt);
+                                processFile(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, isEncrypt);
                                 rl.close();
                             });
                         });
