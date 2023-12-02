@@ -5,7 +5,6 @@ To run the JavaScript program:
 
 L1: Caesar Cipher (Monoalphabetic Encryption Algorithm)
 - Ignores non-alphabetic characters (no symbols and numbers)
-- Turns lowercase letters into uppercase letters
 - Use module/library: fs (reading and writing files), readline (to read input stream)
 
-To check if the encryption works perfectly: https://cryptii.com/pipes/caesar-cipher
+To check if the encryption/decryption works perfectly: https://cryptii.com/pipes/caesar-cipher 
