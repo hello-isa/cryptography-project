@@ -3,8 +3,15 @@ To run the JavaScript program:
 2. Install readline-sync: npm install readline-sync
 3. Open terminal and enter: cryptography.js
 
-L1: Caesar Cipher (Monoalphabetic Encryption Algorithm)
+L1: Caesar Cipher (Monoalphabetic Algorithm)
 - Ignores non-alphabetic characters (no symbols and numbers)
 - Use module/library: fs (reading and writing files), readline (to read input stream)
 
 To check if the encryption/decryption works perfectly: https://cryptii.com/pipes/caesar-cipher 
+
+L2: Vignere Cipher (Polyalphabetic Algorithm)
+- Ignores non-alphabetic characters (no symbols and numbers)
+
+To check if the encryption/decryption works perfectly:
+https://cryptii.com/pipes/vigenere-cipher
+https://www.cs.du.edu/~snarayan/crypt/vigenere.html
