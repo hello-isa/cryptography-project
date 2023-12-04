@@ -1,11 +1,94 @@
 const fs = require('fs');
-const readline = require('readline');
+const readlineSync = require('readline-sync');
 
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+// Helper function to write data to a file
+function writeToFile(filename, data) {
+  fs.writeFileSync(filename, data);
+}
 
+// Helper function to read data from a file
+function readFromFile(filename) {
+  return fs.readFileSync(filename, 'utf-8');
+}
+
+// Helper function to generate RSA key pair
+function generateRSAKeyPair(p, q) {
+  if (!isPrime(p) || !isPrime(q)) {
+    throw new Error('Both p and q must be prime numbers.');
+  }
+
+  const n = p * q;
+  const phi = (p - 1n) * (q - 1n);
+  const e = 65537n;
+  const d = modInverse(e, phi);
+
+  const publicKey = { e, n };
+  const privateKey = { d, n };
+
+  return { publicKey, privateKey };
+}
+
+// Helper function to check if a number is prime
+function isPrime(num) {
+  if (num <= 1n) return false;
+  if (num <= 3n) return true;
+
+  if (num % 2n === 0n || num % 3n === 0n) return false;
+
+  let i = 5n;
+  while (i * i <= num) {
+    if (num % i === 0n || num % (i + 2n) === 0n) return false;
+    i += 6n;
+  }
+
+  return true;
+}
+
+// Helper function to calculate the modular inverse
+function modInverse(a, m) {
+  let m0 = m;
+  let t, q;
+  let x0 = 0n, x1 = 1n;
+
+  if (m === 1n) return 0n;
+
+  while (a > 1n) {
+    q = a / m;
+    t = m;
+    m = a % m;
+    a = t;
+    t = x0;
+    x0 = x1 - q * x0;
+    x1 = t;
+  }
+
+  if (x1 < 0n) x1 += m0;
+
+  return x1;
+}
+
+// Helper function to encrypt a message using RSA
+function encryptRSA(message, publicKey) {
+  const { e, n } = publicKey;
+  const encryptedMessage = message.split('').map(char => {
+    const charCode = BigInt(char.charCodeAt(0));
+    return charCode ** e % n;
+  });
+  return encryptedMessage.join(' ');
+}
+
+// Helper function to decrypt a message using RSA
+function decryptRSA(encryptedMessage, privateKey) {
+  const { d, n } = privateKey;
+  const decryptedMessage = encryptedMessage.split(' ').map(char => {
+    const charCode = BigInt(char);
+    return String.fromCharCode(Number(charCode ** d % n));
+  });
+  return decryptedMessage.join('');
+}
+
+// ... (Your existing railFenceEncrypt, railFenceDecrypt, caesarCipher,
+// vigenereCipher, and vernamCipher functions)
 function railFenceEncrypt(text, key) {
     let fence = [];
     for (let i = 0; i < key; i++) {
@@ -116,187 +199,79 @@ function vernamCipher(text, key, encrypt = true) {
         .join('');
 }
 
-// Helper function to generate RSA key pair
-function generateRSAKeyPair(p, q) {
-    if (!isPrime(p) || !isPrime(q)) {
-      throw new Error('Both p and q must be prime numbers.');
-    }
-  
-    const n = p * q;
-    const phi = (p - 1n) * (q - 1n);
-    const e = 65537n;
-    const d = modInverse(e, phi);
-  
-    const publicKey = { e, n };
-    const privateKey = { d, n };
-  
-    return { publicKey, privateKey };
-}
+function processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys) {
+  try {
+    let data = fs.readFileSync(filename, 'utf8');
 
-// Helper function to check if a number is prime
-function isPrime(num) {
-    if (num <= 1n) return false;
-    if (num <= 3n) return true;
-  
-    if (num % 2n === 0n || num % 3n === 0n) return false;
-  
-    let i = 5n;
-    while (i * i <= num) {
-      if (num % i === 0n || num % (i + 2n) === 0n) return false;
-      i += 6n;
-    }
-  
-    return true;
-}
+    if (operation === 'encrypt') {
+      data = railFenceEncrypt(data, railKey);
+      data = caesarCipher(data, caesarKey);
+      data = vigenereCipher(data, vigenereKey);
+      data = vernamCipher(data, vernamKey);
+      data = encryptRSA(data, rsaKeys.publicKey);
 
-// Helper function to calculate the modular inverse
-function modInverse(a, m) {
-    let m0 = m;
-    let t, q;
-    let x0 = 0n, x1 = 1n;
-  
-    if (m === 1n) return 0n;
-  
-    while (a > 1n) {
-      q = a / m;
-      t = m;
-      m = a % m;
-      a = t;
-      t = x0;
-      x0 = x1 - q * x0;
-      x1 = t;
-    }
-  
-    if (x1 < 0n) x1 += m0;
-  
-    return x1;
-}
-
-// Helper function to encrypt a message using RSA
-function encryptRSA(message, publicKey) {
-    const { e, n } = publicKey;
-    const encryptedMessage = message.split('').map(char => {
-        const charCode = BigInt(char.charCodeAt(0));
-        return modPow(charCode, e, n);
-    });
-    return Buffer.from(encryptedMessage.join(' '), 'hex').toString('base64');
-}
-
-// Helper function to decrypt a message using RSA
-function decryptRSA(encryptedMessage, privateKey) {
-    const { d, n } = privateKey;
-    const encryptedBytes = Buffer.from(encryptedMessage, 'base64').toString('hex');
-    const decryptedMessage = encryptedBytes.match(/.{1,16}/g).map(hexBlock => {
-        const charCode = modPow(BigInt('0x' + hexBlock), d, n);
-        return String.fromCharCode(Number(charCode));
-    });
-    return decryptedMessage.join('');
-}
-
-// Helper function for modular exponentiation
-function modPow(base, exponent, modulus) {
-    let result = 1n;
-    base = base % modulus;
-
-    while (exponent > 0n) {
-        if (exponent % 2n === 1n) {
-            result = (result * base) % modulus;
-        }
-        exponent = exponent >> 1n;
-        base = (base * base) % modulus;
+      // Write RSA keys to a file
+      writeToFile('rsa_keys.txt', `Public Key (e, n): ${rsaKeys.publicKey.e}, ${rsaKeys.publicKey.n}\nPrivate Key (d, n): ${rsaKeys.privateKey.d}, ${rsaKeys.privateKey.n}`);
+    } else if (operation === 'decrypt') {
+      data = decryptRSA(data, rsaKeys.privateKey);
+      data = vernamCipher(data, vernamKey, false);
+      data = vigenereCipher(data, vigenereKey, false);
+      data = caesarCipher(data, caesarKey, false);
+      data = railFenceDecrypt(data, railKey);
+    } else {
+      console.error('Invalid operation. Please enter "encrypt" or "decrypt".');
+      return;
     }
 
-    return result;
+    const outputFilename = `${filename.split('.')[0]}_${operation === 'encrypt' ? 'encrypted' : 'decrypted'}.txt`;
+    fs.writeFileSync(outputFilename, data);
+    console.log(`${operation === 'encrypt' ? 'Encrypted' : 'Decrypted'} successfully. Check ${outputFilename}`);
+  } catch (err) {
+    console.error(`Error reading or writing file: ${err.message}`);
+  }
 }
 
-function processFile(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaPrivateKey, rsaPublicKey, encrypt) {
+function mainWithRSA() {
+  // Get user input for input file
+  const filename = readlineSync.question('Enter the name of the input file: ');
+
+  // Prompt user to choose between encryption and decryption
+  const operation = readlineSync.question('Choose an operation ("encrypt" or "decrypt"): ').toLowerCase();
+
+  if (operation === 'encrypt') {
+    // Encryption
+    const railKey = readlineSync.question('Enter the Rail Fence Cipher key: ');
+    const caesarKey = parseInt(readlineSync.question('Enter the Caesar Cipher key (1 to 25): '));
+    const vigenereKey = readlineSync.question('Enter the Vigenere Cipher key: ');
+    const vernamKey = readlineSync.question('Enter the Vernam Cipher key: ');
+
+    // RSA key input
+    const p = BigInt(readlineSync.question('Enter a prime number p for RSA: '));
+    const q = BigInt(readlineSync.question('Enter a prime number q for RSA: '));
+
     try {
-        let data = fs.readFileSync(filename, 'utf8');
-
-        if (encrypt) {
-            // Encryption order: Rail Fence, Caesar, Vigenere, Vernam, RSA
-            data = railFenceEncrypt(data, railKey);
-            data = caesarCipher(data, caesarKey);
-            data = vigenereCipher(data, vigenereKey);
-            data = vernamCipher(data, vernamKey);
-
-            // Encrypt the data using RSA
-            const encryptedData = encryptRSA(data, rsaPublicKey);
-
-            // Write the encrypted data to a file
-            const outputFilename = `${filename.split('.')[0]}_encrypted.txt`;
-            fs.writeFileSync(outputFilename, encryptedData);
-        } else {
-            // RSA decryption is the first step in the decryption order
-            const privateKey = { d: rsaPrivateKey.d, n: rsaPrivateKey.n };
-            
-            // Read the encrypted file
-            const encryptedData = fs.readFileSync(filename, 'utf8');
-
-            // Decrypt the data using RSA
-            const decryptedData = decryptRSA(encryptedData, privateKey);
-
-            // Decryption order: Vernam, Vigenere, Caesar, Rail Fence
-            decryptedData = vernamCipher(decryptedData, vernamKey, false);
-            decryptedData = vigenereCipher(decryptedData, vigenereKey, false);
-            decryptedData = caesarCipher(decryptedData, caesarKey, false);
-            decryptedData = railFenceDecrypt(decryptedData, railKey);
-
-            // Write the decrypted data to a file
-            const outputFilename = `${filename.split('.')[0]}_decrypted.txt`;
-            fs.writeFileSync(outputFilename, decryptedData);
-        }
-
-        console.log(`${encrypt ? 'Encrypted' : 'Decrypted'} successfully. Check ${outputFilename}`);
-    } catch (err) {
-        console.error(`Error reading or writing file: ${err.message}`);
+      const rsaKeys = generateRSAKeyPair(p, q);
+      processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys);
+    } catch (error) {
+      console.error(error.message);
     }
+  } else if (operation === 'decrypt') {
+    // Decryption
+    const rsaD = BigInt(readlineSync.question('Enter the private exponent d for RSA: '));
+    const rsaN = BigInt(readlineSync.question('Enter the modulus n for RSA: '));
+
+    const railKey = readlineSync.question('Enter the Rail Fence Cipher key: ');
+    const caesarKey = parseInt(readlineSync.question('Enter the Caesar Cipher key (1 to 25): '));
+    const vigenereKey = readlineSync.question('Enter the Vigenere Cipher key: ');
+    const vernamKey = readlineSync.question('Enter the Vernam Cipher key: ');
+
+    const rsaKeys = { privateKey: { d: rsaD, n: rsaN } };
+
+    processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys);
+  } else {
+    console.log('Invalid operation. Exiting.');
+  }
 }
 
-
-function main() {
-    rl.question('Enter the filename (with .txt extension): ', (filename) => {
-        rl.question('Do you want to encrypt or decrypt? ', (operation) => {
-            const isEncrypt = operation.toLowerCase() === 'encrypt';
-
-            if (isEncrypt || operation.toLowerCase() === 'decrypt') {
-                rl.question('Enter the Rail Fence Cipher key: ', (railKey) => {
-                    rl.question('Enter the Caesar Cipher key (1 to 25): ', (caesarKey) => {
-                        caesarKey = parseInt(caesarKey);
-
-                        if (isNaN(caesarKey) || caesarKey < 1 || caesarKey > 25) {
-                            console.error('Invalid Caesar Cipher key. Please enter a number between 1 and 25.');
-                            rl.close();
-                            return;
-                        }
-
-                        rl.question('Enter the Vigenere Cipher key: ', (vigenereKey) => {
-                            if (!/^[a-zA-Z]+$/.test(vigenereKey)) {
-                                console.error('Invalid Vigenere Cipher key. Please enter only alphabetical characters.');
-                                rl.close();
-                                return;
-                            }
-
-                            rl.question('Enter the Vernam Cipher key: ', (vernamKey) => {
-                                if (!/^[a-zA-Z]+$/.test(vernamKey)) {
-                                    console.error('Invalid Vernam Cipher key. Please enter only alphabetical characters.');
-                                    rl.close();
-                                    return;
-                                }
-
-                                processFile(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, isEncrypt);
-                                rl.close();
-                            });
-                        });
-                    });
-                });
-            } else {
-                console.error('Invalid operation. Please enter "encrypt" or "decrypt".');
-                rl.close();
-            }
-        });
-    });
-}
-
-// Run the main function
-main();
+// Run the modified main function
+mainWithRSA();
