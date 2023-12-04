@@ -1,3 +1,4 @@
+// Importing necessary modules for file handling and user input
 const fs = require('fs');
 const readlineSync = require('readline-sync');
 
@@ -11,17 +12,19 @@ function readFromFile(filename) {
   return fs.readFileSync(filename, 'utf-8');
 }
 
-// Generate RSA key pair
+// Generate an RSA key pair given two prime numbers
 function generateRSAKeyPair(p, q) {
   if (!isPrime(p) || !isPrime(q)) {
     throw new Error('Both p and q must be prime numbers.');
   }
 
+  // Calculate n, phi, public exponent (e), and private exponent (d)
   const n = p * q;
   const phi = (p - 1n) * (q - 1n);
-  const e = 65537n;
+  const e = 65537n; // Commonly used public exponent
   const d = modInverse(e, phi);
 
+  // Create public and private key objects
   const publicKey = { e, n };
   const privateKey = { d, n };
 
@@ -35,6 +38,7 @@ function isPrime(num) {
 
   if (num % 2n === 0n || num % 3n === 0n) return false;
 
+  // Use a faster prime-checking algorithm for larger numbers
   let i = 5n;
   while (i * i <= num) {
     if (num % i === 0n || num % (i + 2n) === 0n) return false;
@@ -52,6 +56,7 @@ function modInverse(a, m) {
 
   if (m === 1n) return 0n;
 
+  // Extended Euclidean Algorithm to find modular inverse
   while (a > 1n) {
     q = a / m;
     t = m;
@@ -89,6 +94,7 @@ function decryptRSA(encryptedMessage, privateKey) {
 
 // Encrypt a message using Rail fence cipher
 function railFenceEncrypt(text, key) {
+  // Create a fence pattern, then fill it with characters in a zigzag manner
     let fence = [];
     for (let i = 0; i < key; i++) {
         fence.push([]);
@@ -116,6 +122,7 @@ function railFenceEncrypt(text, key) {
 
 // Decrypt a message using Rail fence cipher
 function railFenceDecrypt(text, key) {
+  // Reconstruct the fence pattern and read characters in the correct order
     let fence = [];
     for (let i = 0; i < key; i++) {
         fence.push([]);
@@ -159,6 +166,7 @@ function railFenceDecrypt(text, key) {
 
 // Encrypt and decrypt a message using Caesar cipher
 function caesarCipher(text, key, encrypt = true) {
+  // Shift each letter in the text by the specified integer key 
     return text.replace(/[a-zA-Z]/g, (char) => {
         const base = char < 'a' ? 'A'.charCodeAt(0) : 'a'.charCodeAt(0);
         const offset = (char.charCodeAt(0) - base + (encrypt ? key : 26 - key)) % 26;
@@ -168,6 +176,7 @@ function caesarCipher(text, key, encrypt = true) {
 
 // Encrypt and decrypt a message using Vigenere cipher
 function vigenereCipher(text, key, encrypt = true) {
+  // Shift each letter in the text by the specified character key
     let result = '';
     let keyIndex = 0;
 
@@ -175,13 +184,19 @@ function vigenereCipher(text, key, encrypt = true) {
         const char = text[i];
 
         if (/[a-zA-Z]/.test(char)) {
+          // If the character is an alphabetic letter
             const base = char < 'a' ? 'A'.charCodeAt(0) : 'a'.charCodeAt(0);
             const keyChar = key[keyIndex % key.length];
             const keyOffset = keyChar.charCodeAt(0) - (keyChar < 'a' ? 'A'.charCodeAt(0) : 'a'.charCodeAt(0));
+            
+          // Calculate the offset for encryption or decryption based on the key
             const offset = (char.charCodeAt(0) - base + (encrypt ? keyOffset : 26 - keyOffset)) % 26;
+          
+          // Apply the offset and construct the result string
             result += String.fromCharCode(base + offset);
             keyIndex++;
         } else {
+          // If the character is not an alphabetic letter, keep it unchanged
             result += char;
         }
     }
@@ -191,6 +206,7 @@ function vigenereCipher(text, key, encrypt = true) {
 
 // Encrypt and decrypt a message using Vernam cipher
 function vernamCipher(text, key, encrypt = true) {
+  // XOR each character in the text with the corresponding key character
     return text
         .split('')
         .map((char, index) => {
@@ -202,11 +218,13 @@ function vernamCipher(text, key, encrypt = true) {
         .join('');
 }
 
+// Function to process a file using RSA and other ciphers based on user input
 function processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys) {
   try {
     let data = fs.readFileSync(filename, 'utf8');
 
     if (operation === 'encrypt') {
+      // Apply a series of encryption algorithms
       data = railFenceEncrypt(data, railKey);
       data = caesarCipher(data, caesarKey);
       data = vigenereCipher(data, vigenereKey);
@@ -217,6 +235,7 @@ function processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey
       writeToFile('rsa_keys.txt', `Public Key (e, n): ${rsaKeys.publicKey.e}, ${rsaKeys.publicKey.n}\nPrivate Key (d, n): ${rsaKeys.privateKey.d}, ${rsaKeys.privateKey.n}`);
       console.log('Generated keys are written to rsa_keys.txt');
     } else if (operation === 'decrypt') {
+      // Apply a series of decryption algorithms
       data = decryptRSA(data, rsaKeys.privateKey);
       data = vernamCipher(data, vernamKey, false);
       data = vigenereCipher(data, vigenereKey, false);
@@ -227,6 +246,7 @@ function processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey
       return;
     }
 
+    // Write the processed data to a new file
     const outputFilename = `${filename.split('.')[0]}_${operation === 'encrypt' ? 'encrypted' : 'decrypted'}.txt`;
     fs.writeFileSync(outputFilename, data);
     console.log(`${operation === 'encrypt' ? 'Encrypted' : 'Decrypted'} successfully. Check ${outputFilename}`);
@@ -235,7 +255,9 @@ function processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey
   }
 }
 
+// Main function to orchestrate the entire process
 function main() {
+  // Display project information
   console.log('\tIAS Cryptography Project');
   console.log('\tFive Level Encryption and Decryption:');
   console.log('\tRail fence cipher, Caesar cipher, Vigenere cipher, Vernam cipher and RSA');
@@ -259,6 +281,7 @@ function main() {
     const q = BigInt(readlineSync.question('Enter a prime number q for RSA: '));
 
     try {
+      // Generate RSA keys and process the file
       const rsaKeys = generateRSAKeyPair(p, q);
       processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys);
     } catch (error) {
@@ -276,11 +299,12 @@ function main() {
 
     const rsaKeys = { privateKey: { d: rsaD, n: rsaN } };
 
+    // Process the file using RSA and other ciphers
     processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys);
   } else {
     console.log('Invalid operation. Exiting.');
   }
 }
 
-// Run the main function
+// Run the main function to start the program
 main();
