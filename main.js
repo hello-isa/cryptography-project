@@ -1,17 +1,17 @@
 const fs = require('fs');
 const readlineSync = require('readline-sync');
 
-// Helper function to write data to a file
+// Write data to a file
 function writeToFile(filename, data) {
   fs.writeFileSync(filename, data);
 }
 
-// Helper function to read data from a file
+// Read data from a file
 function readFromFile(filename) {
   return fs.readFileSync(filename, 'utf-8');
 }
 
-// Helper function to generate RSA key pair
+// Generate RSA key pair
 function generateRSAKeyPair(p, q) {
   if (!isPrime(p) || !isPrime(q)) {
     throw new Error('Both p and q must be prime numbers.');
@@ -28,7 +28,7 @@ function generateRSAKeyPair(p, q) {
   return { publicKey, privateKey };
 }
 
-// Helper function to check if a number is prime
+// Check if a number is prime
 function isPrime(num) {
   if (num <= 1n) return false;
   if (num <= 3n) return true;
@@ -44,7 +44,7 @@ function isPrime(num) {
   return true;
 }
 
-// Helper function to calculate the modular inverse
+// Calculate the modular inverse
 function modInverse(a, m) {
   let m0 = m;
   let t, q;
@@ -67,7 +67,7 @@ function modInverse(a, m) {
   return x1;
 }
 
-// Helper function to encrypt a message using RSA
+// Encrypt a message using RSA
 function encryptRSA(message, publicKey) {
   const { e, n } = publicKey;
   const encryptedMessage = message.split('').map(char => {
@@ -77,7 +77,7 @@ function encryptRSA(message, publicKey) {
   return encryptedMessage.join(' ');
 }
 
-// Helper function to decrypt a message using RSA
+// Decrypt a message using RSA
 function decryptRSA(encryptedMessage, privateKey) {
   const { d, n } = privateKey;
   const decryptedMessage = encryptedMessage.split(' ').map(char => {
@@ -87,8 +87,7 @@ function decryptRSA(encryptedMessage, privateKey) {
   return decryptedMessage.join('');
 }
 
-// ... (Your existing railFenceEncrypt, railFenceDecrypt, caesarCipher,
-// vigenereCipher, and vernamCipher functions)
+// Encrypt a message using Rail fence cipher
 function railFenceEncrypt(text, key) {
     let fence = [];
     for (let i = 0; i < key; i++) {
@@ -115,6 +114,7 @@ function railFenceEncrypt(text, key) {
     return encryptedText;
 }
 
+// Decrypt a message using Rail fence cipher
 function railFenceDecrypt(text, key) {
     let fence = [];
     for (let i = 0; i < key; i++) {
@@ -157,6 +157,7 @@ function railFenceDecrypt(text, key) {
     return decryptedText;
 }
 
+// Encrypt and decrypt a message using Caesar cipher
 function caesarCipher(text, key, encrypt = true) {
     return text.replace(/[a-zA-Z]/g, (char) => {
         const base = char < 'a' ? 'A'.charCodeAt(0) : 'a'.charCodeAt(0);
@@ -165,6 +166,7 @@ function caesarCipher(text, key, encrypt = true) {
     });
 }
 
+// Encrypt and decrypt a message using Vigenere cipher
 function vigenereCipher(text, key, encrypt = true) {
     let result = '';
     let keyIndex = 0;
@@ -187,6 +189,7 @@ function vigenereCipher(text, key, encrypt = true) {
     return result;
 }
 
+// Encrypt and decrypt a message using Vernam cipher
 function vernamCipher(text, key, encrypt = true) {
     return text
         .split('')
@@ -232,7 +235,7 @@ function processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey
   }
 }
 
-function mainWithRSA() {
+function main() {
   console.log('\tIAS Cryptography Project');
   console.log('\tFive Level Encryption and Decryption:');
   console.log('\tRail fence cipher, Caesar cipher, Vigenere cipher, Vernam cipher and RSA');
@@ -279,5 +282,5 @@ function mainWithRSA() {
   }
 }
 
-// Run the modified main function
-mainWithRSA();
+// Run the main function
+main();

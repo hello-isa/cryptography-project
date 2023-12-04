@@ -27,6 +27,8 @@ npm install readline-sync
 node main.js
 ```
 
+6. The output file for encryption is `filename_encrypted.txt` and for decryption is `filename_decrypted.txt`.
+
 ### Notes
 
 For the input file:
