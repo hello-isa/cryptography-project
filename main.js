@@ -233,6 +233,11 @@ function processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey
 }
 
 function mainWithRSA() {
+  console.log('\tIAS Cryptography Project');
+  console.log('\tFive Level Encryption and Decryption:');
+  console.log('\tRail Fence Cipher, Caesar Cipher, Vigenere Cipher, Vernam Cipher and RSA');
+  console.log('\tFor instructions: check README.md\n');
+  
   // Get user input for input file
   const filename = readlineSync.question('Enter the input file (include file extension): ');
 
