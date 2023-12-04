@@ -1,4 +1,4 @@
-# Cryptography Project
+# Cryptography Project: 5LC
 
 Five level encryption and decryption:
 
@@ -24,7 +24,7 @@ npm install readline-sync
 5. Run the program.
 
 ```properties
-node main.js
+node 5lc.js
 ```
 
 6. The output file for encryption is `filename_encrypted.txt` and for decryption is `filename_decrypted.txt`.

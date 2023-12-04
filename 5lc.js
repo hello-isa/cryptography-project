@@ -258,7 +258,7 @@ function processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey
 // Main function to orchestrate the entire process
 function main() {
   // Display project information
-  console.log('\tIAS Cryptography Project');
+  console.log('\tIAS Cryptography Project: 5LC');
   console.log('\tFive Level Encryption and Decryption:');
   console.log('\tRail fence cipher, Caesar cipher, Vigenere cipher, Vernam cipher and RSA');
   console.log('\tFor instructions: check README.md\n');
