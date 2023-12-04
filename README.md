@@ -13,7 +13,7 @@ Five level encryption and decryption:
 To run the JavaScript program:
 
 1. Install [Node.js](https://nodejs.org/en/download) in your PC.
-2. Download `main.js` and create a local folder.
+2. Download `5lc.js` and create a local folder.
 3. Open terminal or command prompt in the folder.
 4. Install the needed dependency i.e., [readline-sync](https://www.npmjs.com/package/readline-sync).
 
