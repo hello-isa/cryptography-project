@@ -219,7 +219,7 @@ function vernamCipher(text, key, encrypt = true) {
 }
 
 // Function to process a file using RSA and other ciphers based on user input
-function processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys) {
+function processFile(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys) {
   try {
     let data = fs.readFileSync(filename, 'utf8');
 
@@ -283,7 +283,7 @@ function main() {
     try {
       // Generate RSA keys and process the file
       const rsaKeys = generateRSAKeyPair(p, q);
-      processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys);
+      processFile(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys);
     } catch (error) {
       console.error(error.message);
     }
@@ -300,7 +300,7 @@ function main() {
     const rsaKeys = { privateKey: { d: rsaD, n: rsaN } };
 
     // Process the file using RSA and other ciphers
-    processFileWithRSA(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys);
+    processFile(filename, operation, railKey, caesarKey, vigenereKey, vernamKey, rsaKeys);
   } else {
     console.log('Invalid operation. Exiting.');
   }
