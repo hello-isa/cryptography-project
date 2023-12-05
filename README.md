@@ -27,7 +27,7 @@ npm install readline-sync
 node 5lc.js
 ```
 
-6. Input the needed keys: Rail fence cipher (positive integer), Caesar cipher (positive integer), Vigenere (character), Vernam (character), RSA (two prime numbers).
+6. Input the needed keys: Rail fence cipher (positive integer), Caesar cipher (positive integer), Vigenere (character), Vernam (character), RSA (two positive integers).
 7. The output file for encryption is `filename_encrypted.txt` and for decryption is `filename_decrypted.txt`.
 
 ### Notes
